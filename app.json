@@ -22,7 +22,10 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "name": "tech-challenge-mobile",
+      "bundler": "metro"
+    },
+    "plugins": ["expo-router"]
   }
 }
