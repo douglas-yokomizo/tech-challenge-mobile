@@ -3,20 +3,22 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 
-export default function PostDetail() {
+export default function ArticleDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
   // In a real app, this would be fetched from an API
-  const post = {
-    id: "1",
-    title: "Getting Started with React Native",
-    author: "John Doe",
-    date: "2023-05-15",
-    readTime: "5 min",
-    likes: 24,
-    comments: 8,
-    image: "https://picsum.photos/seed/post1/400/300",
+  const article = {
+    id: 1,
+    title: "New VR Headsets That Will Shape the Metaverse",
+    category: "Technology",
+    image: "https://example.com/vr-image.jpg",
+    author: {
+      name: "Mason Eduard",
+      avatar: "https://example.com/avatar.jpg",
+    },
+    date: "Jan 3, 2024",
+    views: "2341",
     content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas id sit eu tellus sed cursus eleifend id porta. Lorem adipiscing mus vestibulum consequat porta eu ultrices feugiat. Et faucibus ut amet sit amet. Facilisis faucibus semper cras purus.
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas id sit eu tellus sed cursus eleifend id porta.
@@ -38,52 +40,43 @@ Fermentum et eget libero lectus. Amet, tellus`,
           </TouchableOpacity>
         </View>
 
-        {/* Post Content */}
+        {/* Article Content */}
         <View className="px-4">
           {/* Main Image */}
           <View className="relative">
             <Image
-              source={{ uri: post.image }}
+              source={{ uri: article.image }}
               className="w-full h-48 rounded-lg bg-gray-200"
             />
+            <View className="absolute top-2 left-2 bg-white/80 px-2 py-1 rounded">
+              <Text className="text-xs">{article.category}</Text>
+            </View>
             <TouchableOpacity className="absolute top-2 right-2 bg-white/80 p-2 rounded">
               <Feather name="bookmark" size={16} color="#000" />
             </TouchableOpacity>
           </View>
 
           {/* Title */}
-          <Text className="text-2xl font-bold mt-4">{post.title}</Text>
+          <Text className="text-2xl font-bold mt-4">{article.title}</Text>
 
           {/* Author Info */}
-          <View className="flex-row items-center justify-between mt-4">
-            <View className="flex-row items-center">
-              <Image
-                source={{ uri: `https://i.pravatar.cc/150?u=${post.author}` }}
-                className="w-8 h-8 rounded-full bg-gray-200"
-              />
-              <View className="ml-2">
-                <Text className="text-sm">{post.author}</Text>
-                <Text className="text-xs text-gray-500">
-                  {post.date} • {post.readTime} read
-                </Text>
-              </View>
-            </View>
-            <View className="flex-row items-center">
-              <View className="flex-row items-center mr-4">
-                <Feather name="thumbs-up" size={16} color="#666" />
-                <Text className="text-sm text-gray-500 ml-1">{post.likes}</Text>
-              </View>
-              <View className="flex-row items-center">
-                <Feather name="message-circle" size={16} color="#666" />
-                <Text className="text-sm text-gray-500 ml-1">
-                  {post.comments}
-                </Text>
-              </View>
+          <View className="flex-row items-center mt-4">
+            <Image
+              source={{ uri: article.author.avatar }}
+              className="w-8 h-8 rounded-full bg-gray-200"
+            />
+            <View className="ml-2">
+              <Text className="text-sm">by {article.author.name}</Text>
+              <Text className="text-xs text-gray-500">
+                {article.date} • {article.views} views
+              </Text>
             </View>
           </View>
 
-          {/* Post Text */}
-          <Text className="mt-6 text-gray-700 leading-6">{post.content}</Text>
+          {/* Article Text */}
+          <Text className="mt-6 text-gray-700 leading-6">
+            {article.content}
+          </Text>
 
           {/* Share Button */}
           <TouchableOpacity className="mt-8 mb-8">
