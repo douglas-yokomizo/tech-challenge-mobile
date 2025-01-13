@@ -1,7 +1,16 @@
-import React from "react";
-import { View, Text, FlatList, TouchableOpacity, Image } from "react-native";
-import { Link } from "expo-router";
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Link, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
+import { DrawerActions } from "@react-navigation/native";
+import { useNavigation } from "expo-router";
 
 const dummyPosts = [
   {
@@ -36,53 +45,73 @@ const dummyPosts = [
   },
 ];
 
+const categories = ["All", "Technology", "Lifestyle", "Business", "Culture"];
+
 export default function Home() {
-  const renderItem = ({ item }) => (
-    <Link href={`/post/${item.id}`} asChild>
-      <TouchableOpacity className="mb-4 bg-white rounded-lg shadow-md overflow-hidden">
-        <Image source={{ uri: item.image }} className="w-full h-48" />
-        <View className="p-4">
-          <Text className="text-lg font-bold mb-2">{item.title}</Text>
-          <View className="flex-row items-center mb-2">
-            <Image
-              source={{ uri: `https://i.pravatar.cc/150?u=${item.author}` }}
-              className="w-6 h-6 rounded-full mr-2"
-            />
-            <Text className="text-sm text-gray-600">{item.author}</Text>
-          </View>
-          <Text className="text-xs text-gray-500">
-            {item.date} · {item.readTime} read
-          </Text>
-        </View>
-        <View className="flex-row justify-between items-center p-4 bg-gray-50">
-          <View className="flex-row items-center">
-            <Feather name="thumbs-up" size={16} color="#4B5563" />
-            <Text className="text-sm text-gray-600 ml-1 mr-4">
-              {item.likes}
-            </Text>
-            <Feather name="message-circle" size={16} color="#4B5563" />
-            <Text className="text-sm text-gray-600 ml-1">{item.comments}</Text>
-          </View>
-          <Feather name="book-open" size={16} color="#4B5563" />
-        </View>
-      </TouchableOpacity>
-    </Link>
-  );
+  const navigation = useNavigation();
 
   return (
-    <View className="flex-1 bg-gray-100 p-4">
-      <Text className="text-3xl font-bold mb-6">Your Daily Read</Text>
-      <FlatList
-        data={dummyPosts}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        showsVerticalScrollIndicator={false}
-      />
-      <Link href="/post/create" asChild>
-        <TouchableOpacity className="absolute bottom-6 right-6 bg-blue-500 w-14 h-14 rounded-full items-center justify-center shadow-lg">
-          <Feather name="plus" size={24} color="white" />
-        </TouchableOpacity>
-      </Link>
-    </View>
+    <SafeAreaView className="flex-1 bg-white">
+      <ScrollView className="flex-1">
+        {/* Header */}
+        <View className="px-4 py-2 flex-row items-center justify-between">
+          <TouchableOpacity
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            className="p-2"
+          >
+            <Feather name="menu" size={24} color="#000" />
+          </TouchableOpacity>
+          <View className="flex-1 mx-2">
+            <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-2">
+              <Feather name="search" size={20} color="#666" />
+              <TextInput
+                placeholder="Search..."
+                className="flex-1 ml-2"
+                placeholderTextColor="#666"
+              />
+            </View>
+          </View>
+          <TouchableOpacity>
+            <Feather name="bell" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Post List */}
+        <View className="px-4">
+          {dummyPosts.slice(1).map((post) => (
+            <Link key={post.id} href={`/post/${post.id}`} asChild>
+              <TouchableOpacity className="flex-row mb-4">
+                <Image
+                  source={{ uri: post.image }}
+                  className="w-24 h-24 rounded-lg bg-gray-200"
+                />
+                <View className="flex-1 ml-4">
+                  <Text className="text-base font-semibold mt-1">
+                    {post.title}
+                  </Text>
+                  <Text className="text-xs text-gray-500 mt-1">
+                    {post.date} • {post.readTime} read
+                  </Text>
+                  <View className="flex-row items-center mt-2">
+                    <View className="flex-row items-center mr-4">
+                      <Feather name="thumbs-up" size={14} color="#666" />
+                      <Text className="text-xs text-gray-500 ml-1">
+                        {post.likes}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      <Feather name="message-circle" size={14} color="#666" />
+                      <Text className="text-xs text-gray-500 ml-1">
+                        {post.comments}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            </Link>
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
