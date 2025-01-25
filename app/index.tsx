@@ -16,6 +16,7 @@ import { useNavigation } from "expo-router";
 import { useAppContext } from "./context/AppContext";
 import { useCallback, useEffect } from "react";
 import Animated, { FadeIn } from "react-native-reanimated";
+import { Post } from "./types";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -92,7 +93,7 @@ export default function Home() {
     </View>
   );
 
-  const renderPost = ({ item: post }) => (
+  const renderPost = ({ item: post }: { item: Post }) => (
     <Animated.View entering={FadeIn}>
       <Link href={`/post/${post.id}`} asChild>
         <TouchableOpacity className="flex-row mb-4 px-4">

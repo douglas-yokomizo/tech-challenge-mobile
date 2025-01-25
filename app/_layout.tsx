@@ -18,7 +18,7 @@ export default function AppLayout() {
               width: 280,
             },
             drawerType: "front",
-            gestureEnabled: true,
+            swipeEnabled: true,
           }}
         >
           <Drawer.Screen
