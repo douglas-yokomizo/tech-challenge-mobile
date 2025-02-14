@@ -1,17 +1,69 @@
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import React from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+  Platform,
+  Image,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useAppContext } from "../context/AppContext";
 import Animated, { FadeIn, SlideInRight } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Post } from "../types";
+
+const getApiUrl = (id: string) =>
+  Platform.select({
+    // Use proxy in development on web
+    web: __DEV__
+      ? `http://localhost:3001/api/posts/${id}`
+      : `https://tech-challenge-back-end.vercel.app/posts/${id}`,
+    // Use direct URL on native platforms
+    default: `https://tech-challenge-back-end.vercel.app/posts/${id}`,
+  });
 
 export default function PostDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { state } = useAppContext();
-  const post = state.posts.find((p) => p.id === id);
+  const [post, setPost] = useState<Post | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchPost = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await fetch(getApiUrl(id as string), {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        mode: "cors",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch post");
+      }
+
+      const data = await response.json();
+      setPost(data);
+    } catch (err) {
+      console.error("Error fetching post:", err);
+      setError("Failed to load post");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchPost();
+  }, [fetchPost]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -25,13 +77,21 @@ export default function PostDetail() {
     })
     .activeOffsetX(10);
 
-  if (!post) {
+  if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white justify-center items-center">
-        <Text className="text-red-500">Post not found</Text>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
+
+  if (error || !post) {
+    return (
+      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+        <Text className="text-red-500 mb-4">{error || "Post not found"}</Text>
         <TouchableOpacity
           onPress={handleBack}
-          className="mt-4 bg-blue-500 px-4 py-2 rounded-full"
+          className="bg-blue-500 px-4 py-2 rounded-full"
         >
           <Text className="text-white">Go Back</Text>
         </TouchableOpacity>
@@ -44,7 +104,7 @@ export default function PostDetail() {
       <SafeAreaView className="flex-1 bg-white">
         <Animated.View entering={SlideInRight} className="flex-1">
           {/* Header */}
-          <View className="px-4 py-2 flex-row items-center">
+          <View className="px-4 py-2 flex-row items-center border-b border-gray-100">
             <TouchableOpacity onPress={handleBack} className="p-2">
               <Feather name="arrow-left" size={24} color="#000" />
             </TouchableOpacity>
@@ -63,33 +123,30 @@ export default function PostDetail() {
             className="flex-1"
             showsVerticalScrollIndicator={false}
           >
-            <Image
-              source={{ uri: post.image }}
-              className="w-full h-48 bg-gray-200"
-            />
+            {post.img && (
+              <Image
+                source={{ uri: post.img }}
+                className="w-full h-56 bg-gray-100"
+                resizeMode="cover"
+              />
+            )}
             <View className="p-4">
-              <Text className="text-2xl font-bold">{post.title}</Text>
-              <View className="flex-row items-center mt-2">
-                <Text className="text-gray-500">By {post.author}</Text>
-                <View className="w-1 h-1 bg-gray-500 rounded-full mx-2" />
-                <Text className="text-gray-500">{post.readTime} read</Text>
-              </View>
-              <View className="flex-row items-center mt-4">
-                <View className="flex-row items-center mr-4">
-                  <Feather name="thumbs-up" size={20} color="#666" />
-                  <Text className="text-gray-500 ml-2">{post.likes}</Text>
+              <Text className="text-2xl font-bold mb-2">{post.title}</Text>
+              <View className="flex-row items-center mb-4">
+                <View className="h-8 w-8 rounded-full bg-gray-200 mr-3 items-center justify-center">
+                  <Feather name="user" size={16} color="#666" />
                 </View>
-                <View className="flex-row items-center">
-                  <Feather name="message-circle" size={20} color="#666" />
-                  <Text className="text-gray-500 ml-2">{post.comments}</Text>
+                <View>
+                  <Text className="text-gray-800 font-medium">
+                    {post.author}
+                  </Text>
+                  <Text className="text-gray-500 text-sm">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                    {post.updatedAt !== post.createdAt && " (edited)"}
+                  </Text>
                 </View>
               </View>
-              <Text className="mt-6 text-gray-700 leading-6">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.
-              </Text>
+              <Text className="text-gray-700 leading-6">{post.content}</Text>
             </View>
           </Animated.ScrollView>
         </Animated.View>

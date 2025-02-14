@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, useRouter } from "expo-router";
@@ -18,36 +19,40 @@ import { useCallback, useEffect } from "react";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { Post } from "./types";
 
-const ITEMS_PER_PAGE = 10;
+const API_URL = Platform.select({
+  // Use proxy in development on web
+  web: __DEV__
+    ? "http://localhost:3001/api/posts" // Full proxy URL
+    : "https://tech-challenge-back-end.vercel.app/posts",
+  // Use direct URL on native platforms
+  default: "https://tech-challenge-back-end.vercel.app/posts",
+});
 
 export default function Home() {
   const navigation = useNavigation();
   const { state, dispatch } = useAppContext();
-  const { posts, isLoading, error, currentPage } = state;
+  const { posts, isLoading, error } = state;
 
-  const fetchPosts = useCallback(async (page: number, refresh = false) => {
+  const fetchPosts = useCallback(async (refresh = false) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
-      // Simulate API call with dummy data
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      const newPosts = Array.from({ length: ITEMS_PER_PAGE }, (_, i) => ({
-        id: `${page}-${i}`,
-        title: `Post ${page}-${i}`,
-        author: "Author Name",
-        date: new Date().toISOString(),
-        readTime: "5 min",
-        likes: Math.floor(Math.random() * 100),
-        comments: Math.floor(Math.random() * 50),
-        image: `https://picsum.photos/seed/${page}-${i}/400/300`,
-      }));
+      const response = await fetch(API_URL, {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        mode: "cors",
+      });
 
-      if (refresh) {
-        dispatch({ type: "SET_POSTS", payload: newPosts });
-      } else {
-        dispatch({ type: "ADD_POSTS", payload: newPosts });
+      if (!response.ok) {
+        throw new Error("Failed to fetch posts");
       }
+      const data = await response.json();
+      dispatch({ type: "SET_POSTS", payload: data });
       dispatch({ type: "SET_ERROR", payload: null });
     } catch (err) {
+      console.error("Error fetching posts:", err);
       dispatch({ type: "SET_ERROR", payload: "Failed to load posts" });
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
@@ -55,18 +60,11 @@ export default function Home() {
   }, []);
 
   const handleRefresh = useCallback(() => {
-    fetchPosts(1, true);
+    fetchPosts(true);
   }, [fetchPosts]);
 
-  const handleLoadMore = useCallback(() => {
-    if (!isLoading) {
-      dispatch({ type: "INCREMENT_PAGE" });
-      fetchPosts(currentPage + 1);
-    }
-  }, [isLoading, currentPage, fetchPosts]);
-
   useEffect(() => {
-    fetchPosts(1, true);
+    fetchPosts(true);
   }, []);
 
   const renderHeader = () => (
@@ -95,29 +93,32 @@ export default function Home() {
 
   const renderPost = ({ item: post }: { item: Post }) => (
     <Animated.View entering={FadeIn}>
-      <Link href={`/post/${post.id}`} asChild>
-        <TouchableOpacity className="flex-row mb-4 px-4">
-          <Image
-            source={{ uri: post.image }}
-            className="w-24 h-24 rounded-lg bg-gray-200"
-          />
-          <View className="flex-1 ml-4">
-            <Text className="text-base font-semibold mt-1">{post.title}</Text>
-            <Text className="text-xs text-gray-500 mt-1">
-              {post.date} • {post.readTime} read
-            </Text>
-            <View className="flex-row items-center mt-2">
-              <View className="flex-row items-center mr-4">
-                <Feather name="thumbs-up" size={14} color="#666" />
-                <Text className="text-xs text-gray-500 ml-1">{post.likes}</Text>
+      <Link href={`/post/${post._id}`} asChild>
+        <TouchableOpacity className="mb-6 bg-white">
+          {post.img && (
+            <Image
+              source={{ uri: post.img }}
+              className="w-full h-48 bg-gray-100"
+              resizeMode="cover"
+            />
+          )}
+          <View className="p-4">
+            <Text className="text-xl font-semibold mb-2">{post.title}</Text>
+            <View className="flex-row items-center mb-3">
+              <View className="h-6 w-6 rounded-full bg-gray-200 mr-2 items-center justify-center">
+                <Feather name="user" size={12} color="#666" />
               </View>
-              <View className="flex-row items-center">
-                <Feather name="message-circle" size={14} color="#666" />
-                <Text className="text-xs text-gray-500 ml-1">
-                  {post.comments}
-                </Text>
-              </View>
+              <Text className="text-gray-800 text-sm font-medium">
+                {post.author}
+              </Text>
+              <View className="w-1 h-1 bg-gray-300 rounded-full mx-2" />
+              <Text className="text-gray-500 text-sm">
+                {new Date(post.createdAt).toLocaleDateString()}
+              </Text>
             </View>
+            <Text className="text-gray-600" numberOfLines={2}>
+              {post.content}
+            </Text>
           </View>
         </TouchableOpacity>
       </Link>
@@ -148,15 +149,15 @@ export default function Home() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50">
       <FlatList
         data={posts}
         renderItem={renderPost}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
+        contentContainerClassName="pb-6"
+        ItemSeparatorComponent={() => <View className="h-px bg-gray-100" />}
         refreshControl={
           <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
         }
