@@ -39,7 +39,7 @@ app.use(
   })
 );
 
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Proxy server running on port ${PORT}`);
   console.log(`Proxy URL: http://localhost:${PORT}`);
