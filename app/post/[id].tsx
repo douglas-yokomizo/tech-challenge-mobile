@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { useAppContext } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
 import Animated, { FadeIn, SlideInRight } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useCallback, useEffect, useState } from "react";
@@ -30,6 +31,7 @@ export default function PostDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { state } = useAppContext();
+  const { isTeacherOrAdmin } = useAuth();
   const [post, setPost] = useState<Post | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +111,14 @@ export default function PostDetail() {
               <Feather name="arrow-left" size={24} color="#000" />
             </TouchableOpacity>
             <View className="flex-1" />
+            {isTeacherOrAdmin && (
+              <TouchableOpacity
+                className="p-2"
+                onPress={() => router.push(`/post/edit/${id}`)}
+              >
+                <Feather name="edit-2" size={24} color="#000" />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity className="p-2">
               <Feather name="share" size={24} color="#000" />
             </TouchableOpacity>
@@ -141,9 +151,14 @@ export default function PostDetail() {
                     {post.author}
                   </Text>
                   <Text className="text-gray-500 text-sm">
-                    {new Date(post.createdAt).toLocaleDateString()}
-                    {post.updatedAt !== post.createdAt && " (edited)"}
+                    Created {new Date(post.createdAt).toLocaleDateString()}
                   </Text>
+                  {post.updatedAt !== post.createdAt && (
+                    <Text className="text-gray-500 text-sm">
+                      Last edited{" "}
+                      {new Date(post.updatedAt).toLocaleDateString()}
+                    </Text>
+                  )}
                 </View>
               </View>
               <Text className="text-gray-700 leading-6">{post.content}</Text>
