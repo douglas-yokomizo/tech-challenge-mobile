@@ -30,8 +30,6 @@ O objetivo desta interface gráfica mobile é fornecer uma aplicação blogging 
 
 ## Instalação da aplicação
 
-
-
 ```bash
 npm install
 npm run proxy
