@@ -25,20 +25,19 @@ O objetivo desta interface gráfica mobile é fornecer uma aplicação blogging 
 ## Tecnologias utilizadas no frontend
 
 - React Native
-- Docker
 
 ---
 
 ## Instalação da aplicação
 
-Este projeto está pronto para ser executado em um ambiente Docker. Por este motivo, será necessária apenas a instalação do Docker, não sendo necessária a instalação manual do projeto.
 
-Caso não tenha o Docker instalado, siga as instruções para seu sistema operacional na [documentação oficial do Docker](https://docs.docker.com/get-started/get-docker/).
-
-- Subir a aplicação utilizando Docker:
 
 ```bash
-docker-compose up --build
+npm install
+npm run proxy
+npm run web
+
+npx expo start
 ```
 
 ---

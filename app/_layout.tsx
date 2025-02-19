@@ -31,17 +31,6 @@ function ProtectedLayout() {
           ),
         }}
       />
-      {isAuthenticated && (
-        <Drawer.Screen
-          name="profile"
-          options={{
-            drawerLabel: "Profile",
-            drawerIcon: ({ color }) => (
-              <Feather name="user" size={24} color={color} />
-            ),
-          }}
-        />
-      )}
       {isTeacherOrAdmin && (
         <Drawer.Screen
           name="post/create"
@@ -49,17 +38,6 @@ function ProtectedLayout() {
             drawerLabel: "Create Post",
             drawerIcon: ({ color }) => (
               <Feather name="plus-circle" size={24} color={color} />
-            ),
-          }}
-        />
-      )}
-      {isAuthenticated && (
-        <Drawer.Screen
-          name="bookmarks"
-          options={{
-            drawerLabel: "Bookmarks",
-            drawerIcon: ({ color }) => (
-              <Feather name="bookmark" size={24} color={color} />
             ),
           }}
         />
