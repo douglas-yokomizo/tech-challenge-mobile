@@ -106,7 +106,7 @@ export default function PostDetail() {
       <SafeAreaView className="flex-1 bg-white">
         <Animated.View entering={SlideInRight} className="flex-1">
           {/* Header */}
-          <View className="px-4 py-2 flex-row items-center border-b border-gray-100">
+          <View className="px-4 pt-20 flex-row items-center border-b border-gray-100">
             <TouchableOpacity onPress={handleBack} className="p-2">
               <Feather name="arrow-left" size={24} color="#000" />
             </TouchableOpacity>
@@ -121,9 +121,6 @@ export default function PostDetail() {
             )}
             <TouchableOpacity className="p-2">
               <Feather name="share" size={24} color="#000" />
-            </TouchableOpacity>
-            <TouchableOpacity className="p-2 ml-2">
-              <Feather name="bookmark" size={24} color="#000" />
             </TouchableOpacity>
           </View>
 

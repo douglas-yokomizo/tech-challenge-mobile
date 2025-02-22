@@ -32,7 +32,7 @@ export default function EditPost() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect if user is not a teacher or admin
+  // Redirecionar se o usuário não for professor ou admin
   if (!isTeacherOrAdmin) {
     return <Redirect href="/" />;
   }
@@ -51,15 +51,15 @@ export default function EditPost() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch post");
+        throw new Error("Falha ao carregar o post");
       }
 
       const data: Post = await response.json();
       setTitle(data.title);
       setContent(data.content);
     } catch (err) {
-      console.error("Error fetching post:", err);
-      setError("Failed to load post");
+      console.error("Erro ao buscar o post:", err);
+      setError("Falha ao carregar o post");
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +71,7 @@ export default function EditPost() {
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) {
-      Alert.alert("Error", "Title and content are required");
+      Alert.alert("Erro", "Título e conteúdo são obrigatórios");
       return;
     }
 
@@ -91,16 +91,58 @@ export default function EditPost() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update post");
+        throw new Error("Falha ao atualizar o post");
       }
 
-      router.back();
+      router.push("/"); // Voltar para a lista de posts após atualização
     } catch (err) {
-      console.error("Error updating post:", err);
-      Alert.alert("Error", "Failed to update post. Please try again.");
+      console.error("Erro ao atualizar o post:", err);
+      Alert.alert("Erro", "Falha ao atualizar o post. Tente novamente.");
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDelete = () => {
+    Alert.alert(
+      "Confirmar Exclusão",
+      "Você tem certeza que deseja excluir este post?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+        },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setIsSaving(true);
+              const response = await fetch(getApiUrl(id as string), {
+                method: "DELETE",
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+
+              if (!response.ok) {
+                throw new Error("Falha ao excluir o post");
+              }
+
+              router.push("/"); // Voltar para a lista de posts após exclusão
+            } catch (err) {
+              console.error("Erro ao excluir o post:", err);
+              Alert.alert("Erro", "Falha ao excluir o post. Tente novamente.");
+            } finally {
+              setIsSaving(false);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   if (isLoading) {
@@ -119,7 +161,7 @@ export default function EditPost() {
           onPress={() => router.back()}
           className="bg-blue-500 px-4 py-2 rounded-full"
         >
-          <Text className="text-white">Go Back</Text>
+          <Text className="text-white">Voltar</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -131,25 +173,25 @@ export default function EditPost() {
         <TouchableOpacity onPress={() => router.back()} className="p-2">
           <Feather name="arrow-left" size={24} color="#000" />
         </TouchableOpacity>
-        <Text className="flex-1 text-xl font-bold ml-2">Edit Post</Text>
+        <Text className="flex-1 text-xl font-bold ml-2">Editar Post</Text>
       </View>
       <View className="flex-1 p-4">
         <TextInput
           className="border border-gray-300 p-3 mb-4 rounded-md"
-          placeholder="Post Title"
+          placeholder="Título do Post"
           value={title}
           onChangeText={setTitle}
         />
         <TextInput
           className="border border-gray-300 p-3 mb-4 rounded-md flex-1"
-          placeholder="Post Content"
+          placeholder="Conteúdo do Post"
           value={content}
           onChangeText={setContent}
           multiline
           textAlignVertical="top"
         />
         <TouchableOpacity
-          className="bg-blue-500 p-4 rounded-md"
+          className="bg-teal-950 p-4 rounded-md"
           onPress={handleSubmit}
           disabled={isSaving}
         >
@@ -157,7 +199,21 @@ export default function EditPost() {
             <ActivityIndicator color="white" />
           ) : (
             <Text className="text-white text-center font-semibold">
-              Update Post
+              Atualizar Post
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Botão de exclusão */}
+        <TouchableOpacity
+          className="bg-red-500 p-4 rounded-md mt-4"
+          onPress={handleDelete}
+        >
+          {isSaving ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white text-center font-semibold">
+              Excluir Post
             </Text>
           )}
         </TouchableOpacity>
