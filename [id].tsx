@@ -10,11 +10,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "./app/context/AppContext";
 import Animated, { FadeIn, SlideInRight } from "react-native-reanimated";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useCallback, useEffect, useState } from "react";
-import { Post } from "../types";
+import { Post } from "./types";
 
 const getApiUrl = (id: string) =>
   Platform.select({
