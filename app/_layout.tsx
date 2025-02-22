@@ -35,7 +35,7 @@ function ProtectedLayout() {
         <Drawer.Screen
           name="profile"
           options={{
-            drawerLabel: "Profile",
+            drawerLabel: "Usuários",
             drawerIcon: ({ color }) => (
               <Feather name="user" size={24} color={color} />
             ),
@@ -46,20 +46,9 @@ function ProtectedLayout() {
         <Drawer.Screen
           name="post/create"
           options={{
-            drawerLabel: "Create Post",
+            drawerLabel: "Criar Post",
             drawerIcon: ({ color }) => (
-              <Feather name="plus-circle" size={24} color={color} />
-            ),
-          }}
-        />
-      )}
-      {isAuthenticated && (
-        <Drawer.Screen
-          name="bookmarks"
-          options={{
-            drawerLabel: "Bookmarks",
-            drawerIcon: ({ color }) => (
-              <Feather name="bookmark" size={24} color={color} />
+              <Feather name="file-plus" size={24} color={color} />
             ),
           }}
         />
