@@ -1,6 +1,12 @@
 // Home.tsx
 import React, { useState, useCallback, useEffect, useRef } from "react";
-import { SafeAreaView, ActivityIndicator, View, Text, TouchableOpacity } from "react-native";
+import {
+  SafeAreaView,
+  ActivityIndicator,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import Header from "./components/Header"; // Importando o Header
 import PostList from "./components/PostList";
 import { useAppContext } from "./context/AppContext";
@@ -19,6 +25,11 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState(""); // Texto de busca
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null); // Timeout para debounce
 
+  // New useEffect to update filteredPosts whenever posts change
+  useEffect(() => {
+    setFilteredPosts(posts);
+  }, [posts]);
+
   // Função para buscar todos os posts
   const fetchPosts = useCallback(async () => {
     try {
@@ -30,7 +41,8 @@ export default function Home() {
       const data = await response.json();
 
       const sortedPosts = data.sort(
-        (a: Post, b: Post) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        (a: Post, b: Post) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
       dispatch({ type: "SET_POSTS", payload: sortedPosts });
       setFilteredPosts(sortedPosts); // Atualiza a lista filtrada
@@ -80,11 +92,11 @@ export default function Home() {
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
-        <Text className="text-red-500 mb-4">{error}</Text>
+      <SafeAreaView className="items-center justify-center flex-1 bg-white">
+        <Text className="mb-4 text-red-500">{error}</Text>
         <TouchableOpacity
           onPress={handleRefresh}
-          className="bg-blue-500 px-4 py-2 rounded-full"
+          className="px-4 py-2 bg-blue-500 rounded-full"
         >
           <Text className="text-white">Tentar Novamente</Text>
         </TouchableOpacity>
