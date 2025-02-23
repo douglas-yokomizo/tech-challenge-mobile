@@ -28,13 +28,30 @@ O objetivo desta interface gráfica mobile é fornecer uma aplicação blogging 
 
 ---
 
-## Instalação da aplicação
+## Instalação da aplicação local
 
 ```bash
+# instalar dependencias
 npm install
+
+# subir back-end
 npm run proxy
+
+# subir aplicação local
 npm run web
 
+# ativar emulação de dispositivo
+F12
+Crtl + Shift + M
+```
+
+## Instalação da aplicação com Android Studio
+
+```bash
+# instalar dependencias
+npm install
+
+# subir aplicação no Android Studio
 npx expo start
 ```
 
@@ -44,9 +61,6 @@ npx expo start
 
 ```bash
 user: professor@fiap.com
-key:  password1234
-
-user: aluno@fiap.com
 key:  password1234
 ```
 
@@ -61,13 +75,13 @@ Tela 1: Home - Listagem de Posts
 - Permite que todos usuários façam a busca de um post pelo campo de busca,
 - Permite que o professor e o aluno faça login.
 
-![Home](public/assets/images/home.png)
+![Home](assets/images/home.png)
 
 Tela 2: Login
 
 - Exibe o formulário para fazer a autenticação e gestão do conteúdo.
 
-![Login](public/assets/images/login.png)
+![Login](assets/images/login.png)
 
 Tela 3: Página de administração
 
@@ -75,43 +89,43 @@ Tela 3: Página de administração
 - Oferece opções para criação, edição ou exclusão de um post somente para professores logados,
 - Oferece opção de logout para o professor que estiver logado.
 
-![CRUD](public/assets/images/crud.png)
+![CRUD](assets/images/crud.png)
 
 Tela 4: Criação de Post
 
 - Permite que o professor crie um novo post, inserindo título, conteúdo, imagem  e outras informações relevantes.
 
-![Create](public/assets/images/create.png)
+![Create](assets/images/create.png)
 
 Tela 5: Edição de Post
 
 - Permite que o professor edite um post existente.
 
-![Edit/Update](public/assets/images/edit.png)
+![Edit/Update](assets/images/edit.png)
 
 Tela 6: Exclusão de Post
 
 - Permite que o professor exclua um post existente.
 
-![Delete](public/assets/images/delete.png)
+![Delete](assets/images/delete.png)
 
 Tela 7: Criação de Professores
 
 - Permite que o administrador cadastre um novo professor.
 
-![Create](public/assets/images/create-professor.png)
+![Create](assets/images/create-professor.png)
 
 Tela 8: Edição de Professor
 
 - Permite que o administrador edite um professor existente.
 
-![Edit/Update](public/assets/images/edit-professor.png)
+![Edit/Update](assets/images/edit-professor.png)
 
 Tela 9: Listagem de Professores
 
 - Exibe uma lista de todos os professores cadastrados.
 
-![Index](public/assets/images/index-professor.png)
+![Index](assets/images/index-professor.png)
 
 ---
 
