@@ -1,148 +1,104 @@
+// Home.tsx
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
+  SafeAreaView,
+  ActivityIndicator,
   View,
   Text,
-  RefreshControl,
-  Image,
-  TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  FlatList,
-  Platform,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Link, useRouter } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import Header from "./components/Header"; // Importando o Header
+import PostList from "./components/PostList";
+import { useAppContext } from "./context/AppContext";
+import { Post } from "./types";
 import { DrawerActions } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
-import { useAppContext } from "./context/AppContext";
-import { useCallback, useEffect } from "react";
-import Animated, { FadeIn } from "react-native-reanimated";
-import { Post } from "./types";
 
-const API_URL = Platform.select({
-  // Use proxy in development on web
-  web: __DEV__
-    ? "http://localhost:3001/api/posts" // Full proxy URL
-    : "https://tech-challenge-back-end.vercel.app/posts",
-  // Use direct URL on native platforms
-  default: "https://tech-challenge-back-end.vercel.app/posts",
-});
+const API_URL = "https://tech-challenge-back-end.vercel.app/posts";
 
 export default function Home() {
   const navigation = useNavigation();
   const { state, dispatch } = useAppContext();
   const { posts, isLoading, error } = state;
 
-  const fetchPosts = useCallback(async (refresh = false) => {
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>(posts); // Lista de posts filtrada
+  const [searchQuery, setSearchQuery] = useState(""); // Texto de busca
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null); // Timeout para debounce
+
+  // New useEffect to update filteredPosts whenever posts change
+  useEffect(() => {
+    setFilteredPosts(posts);
+  }, [posts]);
+
+  // Função para buscar todos os posts
+  const fetchPosts = useCallback(async () => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
-      const response = await fetch(API_URL, {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        mode: "cors",
-      });
-
+      const response = await fetch(API_URL);
       if (!response.ok) {
-        throw new Error("Failed to fetch posts");
+        throw new Error("Falha ao carregar os posts");
       }
       const data = await response.json();
-      dispatch({ type: "SET_POSTS", payload: data });
-      dispatch({ type: "SET_ERROR", payload: null });
+
+      const sortedPosts = data.sort(
+        (a: Post, b: Post) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      dispatch({ type: "SET_POSTS", payload: sortedPosts });
+      setFilteredPosts(sortedPosts); // Atualiza a lista filtrada
     } catch (err) {
-      console.error("Error fetching posts:", err);
-      dispatch({ type: "SET_ERROR", payload: "Failed to load posts" });
+      console.error("Erro ao buscar os posts:", err);
+      dispatch({ type: "SET_ERROR", payload: "Falha ao carregar os posts" });
     } finally {
       dispatch({ type: "SET_LOADING", payload: false });
     }
-  }, []);
+  }, [dispatch]);
 
-  const handleRefresh = useCallback(() => {
-    fetchPosts(true);
+  // Carregar posts ao iniciar
+  useEffect(() => {
+    fetchPosts();
   }, [fetchPosts]);
 
-  useEffect(() => {
-    fetchPosts(true);
-  }, []);
+  // Função para realizar a busca
+  const handleSearch = (query: string) => {
+    setSearchQuery(query); // Atualiza o valor do campo de busca
 
-  const renderHeader = () => (
-    <View className="px-4 py-2 flex-row items-center justify-between">
-      <TouchableOpacity
-        onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-        className="p-2"
-      >
-        <Feather name="menu" size={24} color="#000" />
-      </TouchableOpacity>
-      <View className="flex-1 mx-2">
-        <View className="flex-row items-center bg-gray-100 rounded-full px-4 py-2">
-          <Feather name="search" size={20} color="#666" />
-          <TextInput
-            placeholder="Search..."
-            className="flex-1 ml-2"
-            placeholderTextColor="#666"
-          />
-        </View>
-      </View>
-      <TouchableOpacity>
-        <Feather name="bell" size={24} color="#000" />
-      </TouchableOpacity>
-    </View>
-  );
+    // Limitar re-renderizações com debounce
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
 
-  const renderPost = ({ item: post }: { item: Post }) => (
-    <Animated.View entering={FadeIn}>
-      <Link href={`/post/${post._id}`} asChild>
-        <TouchableOpacity className="mb-6 bg-white">
-          {post.img && (
-            <Image
-              source={{ uri: post.img }}
-              className="w-full h-48 bg-gray-100"
-              resizeMode="cover"
-            />
-          )}
-          <View className="p-4">
-            <Text className="text-xl font-semibold mb-2">{post.title}</Text>
-            <View className="flex-row items-center mb-3">
-              <View className="h-6 w-6 rounded-full bg-gray-200 mr-2 items-center justify-center">
-                <Feather name="user" size={12} color="#666" />
-              </View>
-              <Text className="text-gray-800 text-sm font-medium">
-                {post.author}
-              </Text>
-              <View className="w-1 h-1 bg-gray-300 rounded-full mx-2" />
-              <Text className="text-gray-500 text-sm">
-                {new Date(post.createdAt).toLocaleDateString()}
-              </Text>
-            </View>
-            <Text className="text-gray-600" numberOfLines={2}>
-              {post.content}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </Link>
-    </Animated.View>
-  );
+    debounceTimeout.current = setTimeout(() => {
+      if (query === "") {
+        setFilteredPosts(posts); // Exibe todos os posts se a busca estiver vazia
+      } else {
+        const filtered = posts.filter((post) =>
+          post.title.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredPosts(filtered); // Filtra os posts conforme a busca
+      }
+    }, 500); // Debounce de 500ms
+  };
 
-  const renderFooter = () => {
-    if (!isLoading) return null;
-    return (
-      <View className="py-4">
-        <ActivityIndicator size="small" color="#0000ff" />
-      </View>
-    );
+  // Função de refresh para buscar os posts novamente
+  const handleRefresh = useCallback(() => {
+    fetchPosts();
+  }, [fetchPosts]);
+
+  // Função para abrir o menu
+  const openMenu = () => {
+    navigation.dispatch(DrawerActions.openDrawer());
   };
 
   if (error) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
-        <Text className="text-red-500 mb-4">{error}</Text>
+      <SafeAreaView className="items-center justify-center flex-1 bg-white">
+        <Text className="mb-4 text-red-500">{error}</Text>
         <TouchableOpacity
           onPress={handleRefresh}
-          className="bg-blue-500 px-4 py-2 rounded-full"
+          className="px-4 py-2 bg-blue-500 rounded-full"
         >
-          <Text className="text-white">Retry</Text>
+          <Text className="text-white">Tentar Novamente</Text>
         </TouchableOpacity>
       </SafeAreaView>
     );
@@ -150,18 +106,21 @@ export default function Home() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <FlatList
-        data={posts}
-        renderItem={renderPost}
-        keyExtractor={(item) => item._id}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
-        contentContainerClassName="pb-6"
-        ItemSeparatorComponent={() => <View className="h-px bg-gray-100" />}
-        refreshControl={
-          <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
-        }
+      <Header
+        searchQuery={searchQuery}
+        setSearchQuery={handleSearch}
+        onMenuPress={openMenu} // Passa a função para abrir o menu
       />
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <PostList
+          posts={posts}
+          filteredPosts={filteredPosts}
+          handleRefresh={handleRefresh}
+          isLoading={isLoading}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -51,15 +52,18 @@ export default function Login() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 p-4 justify-center">
-        <Text className="text-3xl font-bold mb-8 text-center">Login</Text>
+      <View className="items-center justify-center flex-1">
+        <Image
+          source={require('../assets/techSchool.png')} 
+          className="mb-10"
+        />
 
-        <View className="space-y-4">
+        <View className="space-y-4 w-80">
           <View>
             <Text className="text-gray-600 mb-2">Email</Text>
             <TextInput
-              className="border border-gray-300 p-3 rounded-md"
-              placeholder="Enter your email"
+              className="border border-gray-300 p-3 rounded-md mb-3"
+              placeholder="Insira seu e-mail"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -68,10 +72,10 @@ export default function Login() {
           </View>
 
           <View>
-            <Text className="text-gray-600 mb-2">Password</Text>
+            <Text className="text-gray-600 mb-2">Senha</Text>
             <TextInput
               className="border border-gray-300 p-3 rounded-md"
-              placeholder="Enter your password"
+              placeholder="Insira sua senha"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
@@ -79,7 +83,7 @@ export default function Login() {
           </View>
 
           <TouchableOpacity
-            className="bg-blue-500 p-4 rounded-md mt-4"
+            className="bg-teal-950 p-4 rounded-md mt-4"
             onPress={handleLogin}
             disabled={loading}
           >
@@ -87,7 +91,7 @@ export default function Login() {
               <ActivityIndicator color="white" />
             ) : (
               <Text className="text-white text-center font-semibold">
-                Login
+                Entrar
               </Text>
             )}
           </TouchableOpacity>

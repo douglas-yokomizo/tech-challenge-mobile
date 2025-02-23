@@ -31,13 +31,24 @@ function ProtectedLayout() {
           ),
         }}
       />
+      {isAuthenticated && (
+        <Drawer.Screen
+          name="profile"
+          options={{
+            drawerLabel: "Usuários",
+            drawerIcon: ({ color }) => (
+              <Feather name="user" size={24} color={color} />
+            ),
+          }}
+        />
+      )}
       {isTeacherOrAdmin && (
         <Drawer.Screen
           name="post/create"
           options={{
-            drawerLabel: "Create Post",
+            drawerLabel: "Criar Post",
             drawerIcon: ({ color }) => (
-              <Feather name="plus-circle" size={24} color={color} />
+              <Feather name="file-plus" size={24} color={color} />
             ),
           }}
         />

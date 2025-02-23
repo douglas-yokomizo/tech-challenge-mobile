@@ -37,3 +37,6 @@ yarn-error.*
 
 # cursor
 .cursorrules
+
+# env
+.env

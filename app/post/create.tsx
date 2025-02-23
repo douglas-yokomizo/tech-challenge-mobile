@@ -13,6 +13,7 @@ import {
 import { useRouter, Redirect } from "expo-router";
 import axios, { AxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
+import { useAppContext } from "../context/AppContext";
 import * as ImagePicker from "expo-image-picker";
 
 const API_URL = "https://tech-challenge-back-end.vercel.app";
@@ -24,6 +25,7 @@ export default function CreatePost() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { token, isTeacherOrAdmin, user } = useAuth();
+  const { dispatch } = useAppContext();
 
   // Redirect if user is not a teacher or admin
   if (!isTeacherOrAdmin) {
@@ -124,12 +126,45 @@ export default function CreatePost() {
       });
 
       if (response.status === 201 || response.status === 200) {
-        Alert.alert("Success", "Post created successfully", [
-          {
-            text: "OK",
-            onPress: () => router.back(),
-          },
-        ]);
+        try {
+          // Fetch updated posts
+          const postsResponse = await axios.get(`${API_URL}/posts`, {
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (postsResponse.data) {
+            // Sort posts by creation date (newest first)
+            const sortedPosts = postsResponse.data.sort(
+              (a: any, b: any) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            );
+
+            // Update posts in context
+            dispatch({ type: "SET_POSTS", payload: sortedPosts });
+
+            // Clear form
+            setTitle("");
+            setContent("");
+            setImage(null);
+
+            // Navigate and show success message
+            router.replace("/");
+            Alert.alert("Success", "Post created successfully");
+          }
+        } catch (fetchError) {
+          console.error("Error fetching updated posts:", fetchError);
+          // Still navigate even if fetch fails
+          router.replace("/");
+          Alert.alert(
+            "Success",
+            "Post created successfully. Please refresh to see updates."
+          );
+        }
       }
     } catch (error) {
       console.error("Error creating post:", error);
@@ -146,19 +181,19 @@ export default function CreatePost() {
   return (
     <ScrollView className="flex-1 bg-white">
       <View className="p-4">
-        <Text className="text-2xl font-bold mb-4">Create New Post</Text>
+        <Text className="mb-4 text-2xl font-bold">Create New Post</Text>
 
-        <Text className="text-gray-600 mb-2">Title</Text>
+        <Text className="mb-2 text-gray-600">Title</Text>
         <TextInput
-          className="border border-gray-300 p-2 mb-4 rounded-md"
+          className="p-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Enter post title"
           value={title}
           onChangeText={setTitle}
         />
 
-        <Text className="text-gray-600 mb-2">Content</Text>
+        <Text className="mb-2 text-gray-600">Content</Text>
         <TextInput
-          className="border border-gray-300 p-2 mb-4 rounded-md h-40"
+          className="h-40 p-2 mb-4 border border-gray-300 rounded-md"
           placeholder="Enter post content"
           value={content}
           onChangeText={setContent}
@@ -166,12 +201,12 @@ export default function CreatePost() {
           textAlignVertical="top"
         />
 
-        <Text className="text-gray-600 mb-2">Image</Text>
+        <Text className="mb-2 text-gray-600">Image</Text>
         <TouchableOpacity
-          className="bg-blue-500 p-4 rounded-md mb-4"
+          className="p-4 mb-4 bg-blue-500 rounded-md"
           onPress={pickImage}
         >
-          <Text className="text-white text-center font-semibold">
+          <Text className="font-semibold text-center text-white">
             Pick an Image
           </Text>
         </TouchableOpacity>
@@ -192,14 +227,14 @@ export default function CreatePost() {
         )}
 
         <TouchableOpacity
-          className="bg-green-500 p-4 rounded-md"
+          className="p-4 bg-green-500 rounded-md"
           onPress={handleSubmit}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white text-center font-semibold">
+            <Text className="font-semibold text-center text-white">
               Create Post
             </Text>
           )}
